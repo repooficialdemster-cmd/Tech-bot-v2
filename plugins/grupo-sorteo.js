@@ -25,7 +25,7 @@ function getGroupSorteos(groupId) {
   return sorteos[groupId]
 }
 
-const handler = async (m, { conn, args, text }) =>
+let handler = async (m, { conn, args, text }) =>
   const groupId = m.chat
   let sorteoData = getGroupSorteos(groupId)
 
