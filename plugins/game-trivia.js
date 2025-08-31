@@ -1494,36 +1494,18 @@ const triviaHandler = async (m, { conn, command, args, usedPrefix }) => {
         triviaSessions.set(m.chat, { index: randomIndex, answered: false });
 
         const caption = `
-🎓 *Trivia* ${questionData.question}  
+🎓 *Trivia*
+
+${questionData.question}
+
+A) ${questionData.options[0]}
+B) ${questionData.options[1]}
+C) ${questionData.options[2]}
+
+✍️ Responde con *${usedPrefix}trivia A*, *${usedPrefix}trivia B* o *${usedPrefix}trivia C*
         `.trim();
 
-        const buttons = [
-            {
-                buttonId: `${usedPrefix}trivia A`,
-                buttonText: { displayText: `A: ${questionData.options[0]}` },
-                type: 1
-            },
-            {
-                buttonId: `${usedPrefix}trivia B`,
-                buttonText: { displayText: `B: ${questionData.options[1]}` },
-                type: 1
-            },
-            {
-                buttonId: `${usedPrefix}trivia C`,
-                buttonText: { displayText: `C: ${questionData.options[2]}` },
-                type: 1
-            }
-        ];
-
-        await conn.sendMessage(
-            m.chat,
-            {
-                text: caption,
-                buttons: buttons,
-                viewOnce: true
-            },
-            { quoted: m }
-        );
+        await conn.reply(m.chat, caption, m);
 
     } else {
         let session = triviaSessions.get(m.chat);
@@ -1533,31 +1515,20 @@ const triviaHandler = async (m, { conn, command, args, usedPrefix }) => {
 
         let userAnswer = args[0].toUpperCase();
         let correctAnswer = questions[session.index].answer;
-        let result = userAnswer === correctAnswer ? "🎉 ¡Respuesta correcta!" : `❌ Incorrecto. La respuesta correcta era *${questions[session.index].options[correctAnswer.charCodeAt(0) - 65]}*`;
+
+        let result = userAnswer === correctAnswer
+            ? "🎉 ¡Respuesta correcta!"
+            : `❌ Incorrecto. La respuesta correcta era *${correctAnswer}) ${questions[session.index].options[correctAnswer.charCodeAt(0) - 65]}*`;
 
         const caption = `
 ⚜️ *Tu respuesta:* ${userAnswer}  
 ✅ *Solución:* ${correctAnswer}) ${questions[session.index].options[correctAnswer.charCodeAt(0) - 65]}  
-> 🧠 *Resultado:* ${result}
-`.trim();
+🧠 *Resultado:* ${result}
 
-        const buttons = [
-            {
-                buttonId: `${usedPrefix}trivia`,
-                buttonText: { displayText: "🔄 Nueva Pregunta" },
-                type: 1
-            }
-        ];
+👉 Usa *${usedPrefix}trivia* para una nueva pregunta.
+        `.trim();
 
-        await conn.sendMessage(
-            m.chat,
-            {
-                text: caption,
-                buttons: buttons,
-                viewOnce: true
-            },
-            { quoted: m }
-        );
+        await conn.reply(m.chat, caption, m);
 
         triviaSessions.set(m.chat, { ...session, answered: true });
     }
