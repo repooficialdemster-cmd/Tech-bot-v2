@@ -16,7 +16,7 @@ let handler = async (m, { conn }) => {
   }
 
   const textoPerfil = `
-❇️ Perfil de usuario *${nombre}* ✿
+❇️ Perfil de usuario *${nombre}* 
 
 🧾 *Número:* ${numero}`.trim()
 
