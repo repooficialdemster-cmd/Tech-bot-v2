@@ -97,15 +97,15 @@ yukiJadiBot(yukiJBOptions)
 global.db.data.users[m.sender].Subs = new Date * 1
 } 
 
-handler.help = ['code', 'qr']
+handler.help = ['qr', 'code']
 handler.tags = ['jadibot']
-handler.command = ['serqr', 'sercode', 'code', 'qr']
+handler.command = ['qr', 'code', 'serqr', 'sercode']
 export default handler 
 
 export async function yukiJadiBot(options) {
 let { pathYukiJadiBot, m, conn, args, usedPrefix, command, phoneNumber } = options
-if (command === 'sercode') {
-command = 'serqr'; 
+if (command === 'sercode', 'code') {
+command = 'serqr', 'qr'; 
 args.unshift('code')}
 const mcode = args[0] && /(--code|code)/.test(args[0].trim()) ? true : args[1] && /(--code|code)/.test(args[1].trim()) ? true : false
 let txtCode, codeBot, txtQR
@@ -220,6 +220,7 @@ if (reason === 500) {
 console.log(chalk.bold.magentaBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄⟡\n┆ Conexión perdida en la sesión (+${path.basename(pathYukiJadiBot)}). Borrando datos...\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄⟡`))
 
 return creloadHandler(true).catch(console.error)
+
 }
 if (reason === 515) {
 console.log(chalk.bold.magentaBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄⟡\n┆ Reinicio automático para la sesión (+${path.basename(pathYukiJadiBot)}).\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄⟡`))
@@ -236,7 +237,7 @@ let userName, userJid
 userName = sock.authState.creds.me.name || 'Anónimo'
 userJid = sock.authState.creds.me.jid || `${path.basename(pathYukiJadiBot)}@s.whatsapp.net`
 console.log(chalk.bold.cyanBright(`\n❒⸺⸺⸺⸺【• SUB-BOT •】⸺⸺⸺⸺❒\n│\n│ 🟢 ${userName} (+${path.basename(pathYukiJadiBot)}) conectado exitosamente.\n│\n❒⸺⸺⸺【• CONECTADO •】⸺⸺⸺❒`))
-await conn.sendMessage(m.chat, { text: `✅ *Device LoggedIn.*` }, { quoted: m })
+await conn.sendMessage(m.chat, { text: `✅ *𝙳𝚎𝚟𝚒𝚌𝚎 𝙻𝚘𝚐𝚐𝚎𝚍𝙸𝚗.*` }, { quoted: m })
 sock.isInit = true
 global.conns.push(sock)
 await joinChannels(sock)
