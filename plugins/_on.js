@@ -64,7 +64,6 @@ const handler = async (m, { conn, command, args, isAdmin }) => {
 handler.command = ['on', 'off']
 handler.group = true
 handler.admin = true
-handler.botAdmin = true
 handler.tags = ['group']
 handler.help = ['on <función>', 'off <función>']
 
