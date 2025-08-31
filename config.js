@@ -12,9 +12,7 @@ global.owner = [
   ['573134811343', 'Juan Host', true]
 ]
 
-global.mods = [
-  ["142176587649188", "Añoñimus", true]
-]
+global.mods = []
 
 // 📌 Ruta de tu archivo premium.json
 const premPath = "./json/premium.json"
