@@ -342,6 +342,20 @@ continue
 if ((usedPrefix = (match[0] || '')[0])) { // usedPrefix ahora se asigna, no se declara aquí
 let noPrefix = m.text.replace(usedPrefix, '')
 let [command, ...args] = noPrefix.trim().split` `.filter(v => v)
+// 🕐 Cooldown y simulación de escritura
+    let userData = global.db.data.users[m.sender] || {}
+    let now = Date.now()
+    let cd = 1000 + Math.floor(Math.random() * 1000) // entre 1.5s y 2.5s
+    if (userData.lastCmd && (now - userData.lastCmd < 1000)) {
+        return // evita flood sospechoso
+    }
+    userData.lastCmd = now
+    global.db.data.users[m.sender] = userData
+
+    // marcar como visto y simular escritura
+    await this.readMessages([m.key])
+    await this.sendPresenceUpdate('composing', m.chat)
+    await delay(cd)
 args = args || []
 let _args = noPrefix.trim().split` `.slice(1)
 let text = _args.join` `
