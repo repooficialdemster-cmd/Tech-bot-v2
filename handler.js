@@ -338,34 +338,34 @@ __filename
 continue
 }
 if (typeof plugin !== 'function')
-continue
-  if ((usedPrefix = (match[0] || '')[0])) {
-    let noPrefix = m.text.replace(usedPrefix, '')
-    let [command, ...args] = noPrefix.trim().split` `.filter(v => v)
+continuelet noPrefix = ''
+let command = ''
+let args = []
 
-    // 🕐 Cooldown y simulación "humana"
+if ((usedPrefix = (match[0] || '')[0])) {
+    noPrefix = m.text.replace(usedPrefix, '')
+    ;[command, ...args] = noPrefix.trim().split` `.filter(v => v)
+
+    // cooldown y escritura simulada
     let userData = global.db.data.users[m.sender] || {}
     let now = Date.now()
-    let cd = 1500 + Math.floor(Math.random() * 1000) // 1.5s - 2.5s
+    let cd = 1500 + Math.floor(Math.random() * 1000)
 
-    if (userData.lastCmd && (now - userData.lastCmd < 1000)) {
-        return // evita flood sospechoso
-    }
+    if (userData.lastCmd && (now - userData.lastCmd < 1000)) return
     userData.lastCmd = now
     global.db.data.users[m.sender] = userData
 
-    // 🔹 marca como leído y simula que escribe
     try {
         await this.readMessages([m.key])
         await this.sendPresenceUpdate('composing', m.chat)
         await delay(cd)
-        await this.sendPresenceUpdate('paused', m.chat) // deja de "escribir"
+        await this.sendPresenceUpdate('paused', m.chat)
     } catch (e) {
         console.error('❌ Error en presencia:', e)
     }
-
-    // 👉 después sigue el flujo normal de ejecución de comandos
 }
+
+// acá ya podés usar `args`, `noPrefix` y `command` sin que explote
 args = args || []
 let _args = noPrefix.trim().split` `.slice(1)
 let text = _args.join` `
