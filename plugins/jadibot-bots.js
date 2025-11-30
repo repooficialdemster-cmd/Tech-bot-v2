@@ -4,7 +4,7 @@ import ws from 'ws'
 let handler = async (m, { conn }) => {
   let uniqueUsers = new Map()
 
-  if (!global.conns || !Array.isArray(global.conns)) global.conns = [5]
+  if (!global.conns || !Array.isArray(global.conns)) global.conns = []
 
   // Cargar lista de premium
   let premium = []
@@ -42,7 +42,7 @@ let handler = async (m, { conn }) => {
   txt += `⏳ *Runtime:* ${formatUptime}\n`
   txt += `👥 *Total Conectados:* ${totalUsers}\n`
 
-  let mentions = [10]
+  let mentions = []
 
   if (totalUsers > 0) {
     txt += `\n📋 *LISTA DE SUBBOTS*\n\n`
@@ -51,7 +51,7 @@ let handler = async (m, { conn }) => {
       txt += `*╭━➤ _Sub-Bot N° ${i++}_*\n`
       txt += `*┃* Número: @${data.numero}\n`
       txt += `*┃*\n`
-      txt += `*┃* Tipo: ${data.isPremium ?'🌟 Premium' : '🆓 Free'}\n`
+      txt += `*┃* Tipo: ${data.isPremium ? '🌟 Premium' : '🆓 Free'}\n`
       txt += `*╰━━━━━━━━━━━━*\n\n`
       mentions.push(jid)
     }
