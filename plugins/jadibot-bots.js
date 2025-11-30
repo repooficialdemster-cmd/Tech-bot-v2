@@ -7,11 +7,11 @@ let handler = async (m, { conn }) => {
   if (!global.conns || !Array.isArray(global.conns)) global.conns = []
 
   // Cargar lista de premium
-  let premium = [10]
+  let premium = [1]
   try {
     premium = JSON.parse(fs.readFileSync('./json/premium.json'))
   } catch {
-    premium = [10]
+    premium = [1]
   }
 
   for (const connSub of global.conns) {
@@ -42,7 +42,7 @@ let handler = async (m, { conn }) => {
   txt += `⏳ *Runtime:* ${formatUptime}\n`
   txt += `👥 *Total Conectados:* ${totalUsers}\n`
 
-  let mentions = []
+  let mentions = [10]
 
   if (totalUsers > 0) {
     txt += `\n📋 *LISTA DE SUBBOTS*\n\n`
