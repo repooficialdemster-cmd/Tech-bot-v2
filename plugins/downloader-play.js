@@ -2,7 +2,7 @@ import yts from "yt-search"
 import fetch from "node-fetch"
 
 const handler = async (m, { conn, text, command }) => {
-  if (!text) return m.reply(`☯️ *Shadow-BOT-MD — Protocolo de Invocación*
+  if (!text) return m.reply(`☯️ *TECH BOT V1 ESTA BUSCANDO TU MUSIC*
 
 Pronuncia el nombre del video o entrega el vínculo de YouTube...
 y la sombra ejecutará tu voluntad.`)
@@ -20,7 +20,7 @@ y la sombra ejecutará tu voluntad.`)
     if (!text.startsWith("https://")) {
       const res = await yts(text)
       if (!res || !res.videos || res.videos.length === 0) {
-        return m.reply(`☯️ *Shadow-BOT-MD — Protocolo de Invocación*
+        return m.reply(`☯️ *TECH BOT V1 ENVIANDO*
 
 Nada fue hallado en las tinieblas...
 Intenta con un nombre más preciso.`)
@@ -43,7 +43,7 @@ Intenta con un nombre más preciso.`)
     } else if (isVideo) {
       await downloadMedia(conn, m, url, title, thumbnail, "mp4")
     } else {
-      await m.reply(`☯️ *Shadow-BOT-MD — Análisis de Objetivo*
+      await m.reply(`☯️ *TECH BOT V1 Análisis de Objetivo*
 
 『🎭』 Título: ${title}
 ✦ Canal: ${authorName}
@@ -57,7 +57,7 @@ Comandos disponibles:
 
   } catch (error) {
     console.error("Error general:", error)
-    await m.reply(`☯️ *Shadow-BOT-MD — Falla en la ejecución*
+    await m.reply(`☯️ *TECH BOT V1 Falla en la ejecución*
 
 Algo perturbó el flujo de las sombras...
 Error: ${error.message}`)
@@ -69,7 +69,7 @@ const downloadMedia = async (conn, m, url, title, thumbnail, type) => {
   try {
     const cleanTitle = cleanName(title) + (type === "mp3" ? ".mp3" : ".mp4")
 
-    const msg = `☯️ *Shadow-BOT-MD — Descarga en curso*
+    const msg = `☯️ *TECH BOT V1 — Descarga en curso*
 
 『🎭』 Título: ${title}
 Invocando tu ${type === "mp3" ? "audio espectral" : "video oculto"}...`
@@ -102,7 +102,7 @@ Invocando tu ${type === "mp3" ? "audio espectral" : "video oculto"}...`
       }, { quoted: m })
     }
 
-    const doneMsg = `☯️ *Shadow-BOT-MD — Transferencia completada*
+    const doneMsg = `☯️ *TECH BOT V1 — Transferencia completada*
 
 『🎭』 Título: ${data.result.title || title}
 ✦ Tipo: ${type === "mp3" ? "Audio" : "Video"}
@@ -115,7 +115,7 @@ Disfrútalo... como si fuera el último eco de tu misión.`
 
   } catch (error) {
     console.error("Error descargando:", error)
-    const errorMsg = `☯️ *Shadow-BOT-MD — Error en la operación*
+    const errorMsg = `☯️ *TECH BOT V1 — Error en la operación*
 
 『🎭』 Título: ${title}
 Algo falló en la ejecución...
