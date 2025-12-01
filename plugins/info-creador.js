@@ -4,8 +4,8 @@ var handler = async (m, { conn }) => {
     const contacto = `
 🤖 *¿QUIERES CONTACTAR A MI CREADOR?* 🤖
 
-📞 *Número:* +5492644893953
-📧 *Correo:* organizadamente
+📞 *Número:* #1 +5491151545427
+📞 *Numero:* #2 +5492644893953
 🔔 *tareas* nodé.js Python.js
 
 💫 *NOTA IMPORTANTE:*
