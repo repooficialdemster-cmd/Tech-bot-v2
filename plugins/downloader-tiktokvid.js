@@ -24,7 +24,7 @@ const handler = async (m, { conn, args, usedPrefix, text, command }) => {
 
   try {
     // Nueva API con parámetro de búsqueda
-    let res = await fetch(`https://api-adonix.ultraplus.click/download/tiktok?apikey=DemonKeytechbot&q=${encodeURIComponent(text)}`)
+    let res = await fetch(`https://api-adonix.ultraplus.click/download/tiktok?apikey=DemonKeytechbot=${encodeURIComponent(text)}`)
     let json = await res.json()
     
     // Verificación de la estructura de respuesta
