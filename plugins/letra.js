@@ -3,170 +3,199 @@ import axios from 'axios'
 var handler = async (m, { conn, text }) => {
   
   if (m.text.startsWith('.letra')) {
-    const args = text.trim().split(' ')
-    args.shift() // Remover ".letra"
-    const searchQuery = args.join(' ')
+    // Obtener el texto de búsqueda
+    const searchQuery = text?.replace('.letra', '').trim()
     
     if (!searchQuery) {
-      m.react('🎵')
+      m.react('❓')
       return await conn.reply(m.chat,
-        `🎤 *BUSCADOR DE LETRAS* 🎤\n\n` +
-        `*Sintaxis:* .letra [canción]\n` +
-        `          .letra [canción] [artista]\n\n` +
-        `*Ejemplos prácticos:*\n` +
-        `\`\`\`\n` +
-        `.letra shape of you\n` +
-        `.letra hasta que se seque el malecón\n` +
-        `.letra la bikina - luis miguel\n` +
-        `.letra corridos belicos\n` +
-        `\`\`\`\n\n` +
-        `_Encuentra la letra de cualquier canción_`,
+        `🎵 *BUSCADOR DE LETRAS* 🎵\n\n` +
+        `*Uso:* .letra [nombre de la canción]\n\n` +
+        `*Ejemplos:*\n` +
+        `• .letra Bohemian Rhapsody\n` +
+        `• .letra Blinding Lights\n` +
+        `• .letra Despacito\n` +
+        `• .letra Flowers\n\n` +
+        `_Te mostraré la letra completa de la canción_`,
         m
       )
     }
     
     try {
-      // Mensaje de carga con emojis animados
-      const loadingEmojis = ['🎵', '🎶', '🎤', '🎧']
-      let loadingIndex = 0
+      m.react('🔍')
       
-      const loadingMsg = await conn.reply(m.chat,
-        `${loadingEmojis[loadingIndex]} *Buscando:* "${searchQuery}"\n` +
-        `_Esto puede tomar unos segundos..._`,
+      // Enviar mensaje de búsqueda
+      const searchMsg = await conn.reply(m.chat,
+        `🔍 *Buscando:* "${searchQuery}"\n` +
+        `⏳ Conectando con la base de datos musical...`,
         m
       )
       
-      // Actualizar emoji de carga cada 2 segundos
-      const loadingInterval = setInterval(async () => {
-        loadingIndex = (loadingIndex + 1) % loadingEmojis.length
-        try {
-          await conn.sendMessage(m.chat, {
-            text: `${loadingEmojis[loadingIndex]} *Buscando:* "${searchQuery}"\n` +
-                  `_Esto puede tomar unos segundos..._`,
-            edit: loadingMsg.key
-          })
-        } catch (e) {}
-      }, 2000)
+      // CONEXIÓN DIRECTA A LA API
+      const apiUrl = `https://api-adonix.ultraplus.click/search/lyrics?apikey=DemonKeytechbot&query=${encodeURIComponent(searchQuery)}`
       
-      // Hacer la consulta a la API
-      const apiResponse = await axios({
-        method: 'GET',
-        url: 'https://api-adonix.ultraplus.click/search/lyrics',
-        params: {
-          apikey: 'DemonKeytechbot',
-          query: searchQuery
-        },
+      console.log(`🔗 Conectando a API: ${apiUrl}`)
+      
+      const response = await axios.get(apiUrl, {
+        timeout: 15000,
         headers: {
-          'User-Agent': 'ChromeBot/1.0'
+          'Accept': 'application/json',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
         }
       })
       
-      clearInterval(loadingInterval)
+      console.log('📊 Respuesta API:', response.status)
       
-      if (!apiResponse.data?.result?.lyrics) {
+      if (response.status !== 200) {
+        throw new Error(`API respondió con código ${response.status}`)
+      }
+      
+      if (!response.data || !response.data.result) {
         await conn.sendMessage(m.chat, {
           text: `❌ *Letra no encontrada*\n\n` +
-                `No hay resultados para: *${searchQuery}*\n\n` +
-                `💡 *Sugerencias:*\n` +
-                `• Verifica la ortografía\n` +
-                `• Intenta con el nombre en inglés\n` +
-                `• Agrega el nombre del artista\n` +
-                `• Prueba con canciones más populares`,
-          edit: loadingMsg.key
+                `No hay resultados para: "${searchQuery}"\n\n` +
+                `💡 *Intenta con:*\n` +
+                `• Nombre más específico\n` +
+                `• Agregar el artista\n` +
+                `• Canción más popular`,
+          edit: searchMsg.key
         })
         m.react('❌')
         return
       }
       
-      const song = apiResponse.data.result
+      const songData = response.data.result
+      console.log('🎵 Datos recibidos:', {
+        titulo: songData.title,
+        artista: songData.artist,
+        tieneLetra: !!songData.lyrics,
+        longitudLetra: songData.lyrics?.length || 0
+      })
       
-      // Crear mensaje formateado
-      let message = `🎵 *${song.title || 'Canción'}*\n`
-      
-      if (song.artist) {
-        message += `👨‍🎤 *Artista:* ${song.artist}\n`
+      // Verificar si hay letra
+      if (!songData.lyrics || songData.lyrics.trim() === '') {
+        await conn.sendMessage(m.chat, {
+          text: `⚠️ *Letra no disponible*\n\n` +
+                `*Canción:* ${songData.title || searchQuery}\n` +
+                `${songData.artist ? `*Artista:* ${songData.artist}\n` : ''}` +
+                `\nLa letra de esta canción no está disponible en la base de datos.`,
+          edit: searchMsg.key
+        })
+        m.react('⚠️')
+        return
       }
       
-      if (song.album) {
-        message += `💿 *Álbum:* ${song.album}\n`
+      // Formatear la respuesta
+      let lyricsMessage = `🎵 *${songData.title || 'Canción'}*\n`
+      
+      if (songData.artist) {
+        lyricsMessage += `🎤 *Artista:* ${songData.artist}\n`
       }
       
-      if (song.year) {
-        message += `📅 *Año:* ${song.year}\n`
+      if (songData.album) {
+        lyricsMessage += `💿 *Álbum:* ${songData.album}\n`
       }
       
-      message += `\n📜 *LETRA:*\n`
-      message += `══════════════════\n\n`
+      if (songData.year) {
+        lyricsMessage += `📅 *Año:* ${songData.year}\n`
+      }
       
-      // Procesar la letra
-      let lyrics = song.lyrics
-      const MAX_CHARS = 3500
+      lyricsMessage += `\n📜 *LETRA DE LA CANCIÓN:*\n`
+      lyricsMessage += `══════════════════\n\n`
       
-      if (lyrics.length > MAX_CHARS) {
-        // Dividir en partes
-        const part1 = lyrics.substring(0, MAX_CHARS)
-        const part2 = lyrics.substring(MAX_CHARS)
-        
-        // Primera parte
-        message += part1
-        message += `\n\n[ *Continuará...* ]`
+      // Manejar letras largas
+      const MAX_LENGTH = 3500
+      const lyrics = songData.lyrics.trim()
+      
+      if (lyrics.length <= MAX_LENGTH) {
+        // Letra corta - un solo mensaje
+        lyricsMessage += lyrics
         
         await conn.sendMessage(m.chat, {
-          text: message,
-          edit: loadingMsg.key
+          text: lyricsMessage,
+          edit: searchMsg.key
+        })
+        m.react('✅')
+        
+      } else {
+        // Letra larga - dividir en partes
+        const part1 = lyrics.substring(0, MAX_LENGTH)
+        const part2 = lyrics.substring(MAX_LENGTH)
+        
+        // Primera parte
+        lyricsMessage += part1
+        lyricsMessage += `\n\n[ *Continúa en siguiente mensaje...* ]`
+        
+        await conn.sendMessage(m.chat, {
+          text: lyricsMessage,
+          edit: searchMsg.key
         })
         
         m.react('✅')
         
-        // Segunda parte después de 1 segundo
-        await new Promise(resolve => setTimeout(resolve, 1000))
+        // Segunda parte después de breve pausa
+        await new Promise(resolve => setTimeout(resolve, 500))
         
-        let secondMessage = `🎵 *CONTINUACIÓN - ${song.title || 'Canción'}*\n`
+        let secondMessage = `🎵 *CONTINUACIÓN - ${songData.title || 'Canción'}*\n`
         secondMessage += `══════════════════\n\n`
-        secondMessage += part2.substring(0, MAX_CHARS)
         
-        if (part2.length > MAX_CHARS) {
+        if (part2.length <= MAX_LENGTH) {
+          secondMessage += part2
+          secondMessage += `\n\n🎶 *Fin de la letra*`
+        } else {
+          secondMessage += part2.substring(0, MAX_LENGTH)
           secondMessage += `\n\n[ *Letra muy extensa, parte final truncada* ]`
         }
         
-        secondMessage += `\n\n🎶 *Fin de la letra*`
-        
         await conn.reply(m.chat, secondMessage, m)
-        
-      } else {
-        // Letra completa en un solo mensaje
-        message += lyrics
-        message += `\n\n✨ *Letra completa obtenida*`
-        
-        await conn.sendMessage(m.chat, {
-          text: message,
-          edit: loadingMsg.key
-        })
-        
-        m.react('✅')
       }
       
     } catch (error) {
-      console.error('Error letra:', error)
+      console.error('❌ Error en .letra:', error.message)
       
-      const errorMsg = `⚠️ *Error del sistema*\n\n` +
-        `No se pudo obtener la letra en este momento.\n\n` +
-        `*Posibles causas:*\n` +
-        `• API temporalmente no disponible\n` +
-        `• Problema de conexión\n` +
-        `• Canción muy poco común\n\n` +
-        `Intenta nuevamente en unos minutos.`
+      let errorMessage = ''
       
-      await conn.reply(m.chat, errorMsg, m)
-      m.react('⚠️')
+      if (error.code === 'ECONNREFUSED') {
+        errorMessage = `❌ *Error de conexión*\n\n` +
+          `No se pudo conectar con el servidor de letras.\n` +
+          `La API puede estar temporalmente fuera de servicio.`
+      } else if (error.code === 'ETIMEDOUT') {
+        errorMessage = `⏱️ *Tiempo de espera agotado*\n\n` +
+          `La conexión tardó demasiado.\n` +
+          `Intenta nuevamente en unos momentos.`
+      } else if (error.response?.status === 404) {
+        errorMessage = `❌ *No encontrado*\n\n` +
+          `La canción "${searchQuery}" no existe en la base de datos.`
+      } else if (error.response?.status === 429) {
+        errorMessage = `⚠️ *Demasiadas solicitudes*\n\n` +
+          `Has hecho muchas búsquedas en poco tiempo.\n` +
+          `Espera unos minutos antes de intentar nuevamente.`
+      } else {
+        errorMessage = `❌ *Error en la búsqueda*\n\n` +
+          `No se pudo obtener la letra.\n` +
+          `Error: ${error.message || 'Desconocido'}`
+      }
+      
+      // Intentar editar el mensaje original
+      try {
+        await conn.sendMessage(m.chat, {
+          text: errorMessage,
+          edit: m.key
+        })
+      } catch (editError) {
+        // Si no se puede editar, enviar nuevo mensaje
+        await conn.reply(m.chat, errorMessage, m)
+      }
+      
+      m.react('❌')
     }
     
     return
   }
 }
 
-handler.help = ['letra <canción>']
+handler.help = ['letra <nombre canción>']
 handler.tags = ['music']
-handler.command = ['letra', 'lyric', 'lyrics', 'songtext']
+handler.command = ['letra', 'lyric', 'lyrics', 'cancion']
 
 export default handler
