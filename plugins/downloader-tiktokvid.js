@@ -51,9 +51,9 @@ const handler = async (m, { conn, args, usedPrefix, text, command }) => {
   }
 }
 
-handler.help = ['tiktokvid']
+handler.help = ['tiktok']
 handler.tags = ['downloader']
-handler.command = ['tiktokvid', 'playtiktok']
+handler.command = ['tiktok', 'playtiktok']
 handler.register = true
 
 export default handler
