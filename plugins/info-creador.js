@@ -8,7 +8,7 @@ var handler = async (m, { conn }) => {
 📞 *Número:*#1 5491151545427
 👤 *nombre* *WILKER OFC*
 📞 *Numero:*#2 5492644893953
-🔔 *Lenguajes* nodé.js Python.py
+🔔 *Lenguajes* Node.js Python.py
 
 💫 *NOTA IMPORTANTE:*
 
