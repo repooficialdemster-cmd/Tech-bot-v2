@@ -18,31 +18,42 @@ const handler = async (m, { conn, args, usedPrefix, text, command }) => {
   if (!isBotPremium(conn)) {
     return m.reply('⚠️ *Se necesita que el bot sea premium.*\n> Usa *_.buyprem_* para activarlo.')
   }
-  if (!text) return m.reply(`⏳ Ingresa una búsqueda para TikTok\n> *Ejemplo:* ${usedPrefix + command} https://vm.tiktok.com/ZMHTskG42AYo4-1ppUy/`)
 
-  let url = `https://api-adonix.ultraplus.click/download/tiktok?apikey=DemonKeytechbot&url=${encodeURIComponent(text)}`
-  let res = await axios.get(url)
-  let json = res.data
+  if (!text) return m.reply(`⏳ Ingresa una búsqueda o link de TikTok\n> *Ejemplo:* ${usedPrefix + command} https://vm.tiktok.com/xxxx`)
 
-  if (!json.status || !json.data) return m.reply('❌ No se encontró ningún video.')
+  try {
+    let api = `https://api-adonix.ultraplus.click/download/tiktok?apikey=DemonKeytechbot&url=${encodeURIComponent(text)}`
+    let { data: json } = await axios.get(api)
 
-  let vid = json.data
+    if (!json.status || !json.data) return m.reply('❌ No se encontró ningún video.')
 
-  let caption = `📎 \`${vid.title}\`\n\n` +
-                `👤 *Autor:* » ${vid.author.name}\n` +
-                `👍 *Likes:* » ${vid.likes}\n` +
-                `💬 *Comentarios:* » ${vid.comments}\n` +
-                `🔄 *Compartidos:* » ${vid.shares}\n` +
-                `👀 *Vistas:* » ${vid.views.toLocaleString()}`
+    let vid = json.data
 
-  await conn.sendMessage(m.chat, {
-    video: { url: vid.video },
-    caption
-  }, { quoted: m })
+    let caption =
+      `📎 \`${vid.title}\`\n\n` +
+      `👤 *Autor:* » ${vid.author?.name || 'Desconocido'}\n` +
+      `👍 *Likes:* » ${vid.likes.toLocaleString()}\n` +
+      `💬 *Comentarios:* » ${vid.comments.toLocaleString()}\n` +
+      `🔁 *Compartidos:* » ${vid.shares.toLocaleString()}\n` +
+      `👀 *Vistas:* » ${vid.views.toLocaleString()}`
+
+    await conn.sendMessage(
+      m.chat,
+      {
+        video: { url: vid.video },
+        caption
+      },
+      { quoted: m }
+    )
+
+  } catch (e) {
+    m.reply('❌ Error al obtener el video.')
+  }
 }
 
 handler.help = ['tiktokvid']
 handler.tags = ['downloader']
 handler.command = ['tiktokvid', 'playtiktok']
 handler.register = true
+
 export default handler
