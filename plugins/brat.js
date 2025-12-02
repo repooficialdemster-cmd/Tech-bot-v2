@@ -1,86 +1,120 @@
-#!/usr/bin/env node
-
+// brat-generator.js
 const axios = require('axios');
 const fs = require('fs');
-const path = require('path');
+const querystring = require('querystring');
 
-// Configuración
-const API_KEY = 'DemonKeytechbot';
-const BASE_URL = 'https://api-adonix.ultraplus.click/canvas/brat';
-
-async function generarBrat(texto, color, output = 'brat-output.png') {
-    try {
-        console.log('🎨 Generando imagen Brat...');
+class BratGenerator {
+    constructor(apiKey = 'DemonKeytechbot') {
+        this.apiKey = apiKey;
+        this.baseUrl = 'https://api-adonix.ultraplus.click/canvas/brat';
+    }
+    
+    async generar(opciones) {
+        const {
+            texto,
+            color = '#FF0000',
+            output = `brat-${Date.now()}.png`,
+            mostrarInfo = false
+        } = opciones;
         
-        // Codificar parámetros
-        const textoCodificado = encodeURIComponent(texto);
-        const colorCodificado = color.replace('#', '%23');
+        if (!texto) {
+            throw new Error('El texto es requerido');
+        }
+        
+        // Preparar parámetros
+        const params = {
+            apikey: this.apiKey,
+            text: texto,
+            color: color.startsWith('#') ? color.replace('#', '%23') : color
+        };
+        
+        // Agregar parámetros adicionales si existen
+        if (opciones.size) params.size = opciones.size;
+        if (opciones.font) params.font = opciones.font;
         
         // Construir URL
-        const url = `${BASE_URL}?apikey=${API_KEY}&text=${textoCodificado}&color=${colorCodificado}`;
+        const queryString = querystring.stringify(params);
+        const url = `${this.baseUrl}?${queryString}`;
         
-        console.log('🔗 URL generada:', url);
+        if (mostrarInfo) {
+            console.log('🔍 Parámetros:', params);
+            console.log('🔗 URL completa:', url);
+        }
         
-        // Descargar imagen
-        const response = await axios({
-            method: 'GET',
-            url: url,
-            responseType: 'arraybuffer',
-            headers: {
-                'User-Agent': 'BratGenerator/1.0'
+        try {
+            const response = await axios.get(url, {
+                responseType: 'arraybuffer',
+                timeout: 30000,
+                validateStatus: function (status) {
+                    return status >= 200 && status < 300;
+                }
+            });
+            
+            // Verificar que es una imagen
+            const contentType = response.headers['content-type'];
+            if (!contentType || !contentType.includes('image')) {
+                throw new Error('La respuesta no es una imagen válida');
             }
-        });
-        
-        // Guardar archivo
-        fs.writeFileSync(output, response.data);
-        
-        console.log(`✅ Imagen guardada como: ${output}`);
-        console.log(`📏 Tamaño: ${response.data.length} bytes`);
-        
-        return {
-            success: true,
-            file: output,
-            size: response.data.length
-        };
-        
-    } catch (error) {
-        console.error('❌ Error:', error.message);
-        return {
-            success: false,
-            error: error.message
-        };
+            
+            // Guardar archivo
+            fs.writeFileSync(output, response.data);
+            
+            console.log(`🎨 Imagen Brat generada exitosamente!`);
+            console.log(`📁 Archivo: ${output}`);
+            console.log(`💾 Tamaño: ${(response.data.length / 1024).toFixed(2)} KB`);
+            console.log(`🎯 Tipo: ${contentType}`);
+            
+            return {
+                success: true,
+                path: output,
+                size: response.data.length,
+                type: contentType,
+                url: url
+            };
+            
+        } catch (error) {
+            console.error('❌ Error al generar la imagen:', error.message);
+            
+            if (error.response) {
+                console.error(`📊 Status: ${error.response.status}`);
+                console.error(`📝 Respuesta: ${error.response.data.toString()}`);
+            }
+            
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    }
+    
+    // Método rápido
+    async rapido(texto, color = '#FF00FF') {
+        return this.generar({ texto, color });
     }
 }
 
-// Manejo de argumentos CLI
-if (require.main === module) {
-    const args = process.argv.slice(2);
-    
-    if (args.length < 2) {
-        console.log(`
-🎨 Brat Generator - Generador de imágenes estilo Brat
+// Ejemplos de uso
+/*
+const brat = new BratGenerator();
 
-Uso:
-  node brat.js "Texto aquí" "#colorhex" [nombre-salida.png]
+// Ejemplo 1: Generación simple
+brat.generar({
+    texto: 'Brat Style',
+    color: '#FF1493',
+    output: 'brat-style.png',
+    mostrarInfo: true
+});
 
-Ejemplos:
-  node brat.js "Hola Mundo" "#FF5733"
-  node brat.js "Brat Style" "#9B59B6" mi-imagen.png
-  node brat.js "Texto" "%23FF0000" (usando %23 en lugar de #)
+// Ejemplo 2: Método rápido
+brat.rapido('Texto rápido', '#00FF00');
 
-Parámetros:
-  texto    : Texto a mostrar en la imagen
-  color    : Color hexadecimal (#RRGGBB o %23RRGGBB)
-  salida   : (Opcional) Nombre del archivo de salida
-        `);
-        process.exit(1);
-    }
-    
-    const texto = args[0];
-    const color = args[1];
-    const output = args[2] || `brat-${Date.now()}.png`;
-    
-    generarBrat(texto, color, output);
-}
-
-module.exports = { generarBrat };
+// Ejemplo 3: Con diferentes colores
+const colores = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF'];
+colores.forEach(async (color, i) => {
+    await brat.generar({
+        texto: `Brat ${i + 1}`,
+        color: color,
+        output: `brat-${i + 1}.png`
+    });
+});
+*/
