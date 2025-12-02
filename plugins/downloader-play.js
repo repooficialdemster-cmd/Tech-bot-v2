@@ -80,7 +80,7 @@ Invocando tu ${type === "mp3" ? "audio espectral" : "video oculto"}...`
       await m.reply(msg)
     }
 
-    const apiUrl = `https://mayapi.ooguy.com/ytdl?url=${encodeURIComponent(url)}&type=${type}&apikey=may-de618680`
+    const apiUrl = `https://mayapi.ooguy.com/ytdl?url=${encodeURIComponent(url)}&type=${type}&apikey=may-30ca3691`
     const response = await fetch(apiUrl)
     const data = await response.json()
 
