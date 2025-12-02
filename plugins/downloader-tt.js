@@ -3,7 +3,7 @@ import fetch from 'node-fetch'
 const cooldown = new Map()
 
 let handler = async (m, { conn, args, usedPrefix, command }) => {
-  // Verificar enlace
+
   if (!args[0]) return m.reply(
     `📥 Uso correcto:
 ${usedPrefix + command} <enlace válido de TikTok>
@@ -12,11 +12,10 @@ Ejemplo:
 ${usedPrefix + command} https://www.tiktok.com/@usuario/video/123456789`
   )
 
-  // --- Límite de 10 usos cada 5 horas ---
   const user = m.sender
   const now = Date.now()
   const limit = 10
-  const timeLimit = 5 * 60 * 60 * 1000 // 5 horas en ms
+  const timeLimit = 5 * 60 * 60 * 1000
 
   if (!cooldown.has(user)) {
     cooldown.set(user, { count: 0, lastReset: now })
@@ -25,7 +24,6 @@ ${usedPrefix + command} https://www.tiktok.com/@usuario/video/123456789`
   let userData = cooldown.get(user)
 
   if (now - userData.lastReset > timeLimit) {
-    // Reset después de 5h
     userData.count = 0
     userData.lastReset = now
   }
@@ -44,23 +42,20 @@ ${usedPrefix + command} https://www.tiktok.com/@usuario/video/123456789`
   userData.count++
   cooldown.set(user, userData)
 
-  // --- Lógica principal ---
   try {
     await conn.sendMessage(m.chat, { react: { text: '⏳', key: m.key } })
 
-    let apiURL = `https://myapiadonix.vercel.app/api/tiktok?url=${encodeURIComponent(args[0])}`
+    let apiURL = `https://api-adonix.ultraplus.click/download/tiktok?apikey=DemonKeytechbot&url=${encodeURIComponent(args[0])}`
     let response = await fetch(apiURL)
     let data = await response.json()
 
-    if (data.status !== 200 || !data.result?.video)
-      throw new Error('No se pudo obtener el video')
+    if (!data.status || !data.data?.video) throw new Error('No se pudo obtener el video')
 
-    let info = data.result
+    let info = data.data
 
     let caption = `
-📌 Título: *${info.title}*
-👤 Autor: *@${info.author.username || 'Desconocido'}*
-⏱️ Duración: *${info.duration || 'N/D'} segundos*
+📌 Título: *${info.title || 'Sin título'}*
+👤 Autor: *${info.author?.name || 'Desconocido'}*
 
 📊 Estadísticas
 ♥ Likes: *${info.likes?.toLocaleString() || 0}*
@@ -71,13 +66,13 @@ ${usedPrefix + command} https://www.tiktok.com/@usuario/video/123456789`
     await conn.sendMessage(m.chat, {
       video: { url: info.video },
       caption,
-      fileName: `${info.title}.mp4`,
+      fileName: `${info.title || 'video'}.mp4`,
       mimetype: 'video/mp4',
       contextInfo: {
         externalAdReply: {
-          title: info.title,
-          body: `Autor: ${info.author.name || 'Desconocido'}`,
-          thumbnailUrl: info.thumbnail,
+          title: info.title || 'Video de TikTok',
+          body: `Autor: ${info.author?.name || 'Desconocido'}`,
+          thumbnailUrl: info.thumbnail || null,
           sourceUrl: args[0],
           mediaType: 1,
           renderLargerThumbnail: true
@@ -88,7 +83,6 @@ ${usedPrefix + command} https://www.tiktok.com/@usuario/video/123456789`
     await conn.sendMessage(m.chat, { react: { text: '✅', key: m.key } })
 
   } catch (err) {
-    console.error(err)
     await conn.sendMessage(m.chat, { react: { text: '❌', key: m.key } })
     m.reply('❌ No se pudo procesar el video. Intenta nuevamente más tarde.')
   }
