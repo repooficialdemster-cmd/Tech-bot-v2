@@ -2,11 +2,11 @@ import yts from "yt-search"
 import fetch from "node-fetch"
 
 const handler = async (m, { conn, text, command }) => {
-  if (!text) return m.reply(`☯️ *Tech bot v1 — está buscando tu pedido*
+  if (!text) return m.reply(`🎄 *Tech bot v1 — Invocación espectral*
 
-Pronuncia el nombre del video o entrega el vínculo de YouTube..`)
+✨ Pronuncia el nombre del video o entrega el enlace de YouTube.`)
 
-  await m.react("🌌")
+  await m.react("❄️")
 
   try {
     let url = text
@@ -18,20 +18,19 @@ Pronuncia el nombre del video o entrega el vínculo de YouTube..`)
 
     if (!text.startsWith("https://")) {
       const res = await yts(text)
-      if (!res || !res.videos || res.videos.length === 0) {
-        return m.reply(`☯️ *Tech bot v1 — Protocolo te envio*
+      if (!res?.videos?.length) {
+        return m.reply(`🎄 *Tech bot v1 — Buscando tu pedido*
 
-Nada fue encontrado...
-Intenta con un nombre más preciso.`)
+🎅 Nada fue encontrado…`)
       }
 
       const video = res.videos[0]
-      title = video.title || title
-      authorName = video.author?.name || authorName
-      durationTimestamp = video.timestamp || durationTimestamp
-      views = video.views || views
-      url = video.url || url
-      thumbnail = video.thumbnail || ""
+      title = video.title
+      authorName = video.author?.name
+      durationTimestamp = video.timestamp
+      views = video.views
+      url = video.url
+      thumbnail = video.thumbnail
     }
 
     const isAudio = ["play", "playaudio", "ytmp3"].includes(command)
@@ -42,24 +41,22 @@ Intenta con un nombre más preciso.`)
     } else if (isVideo) {
       await downloadMedia(conn, m, url, title, thumbnail, "mp4")
     } else {
-      await m.reply(`☯️ *Tech bot v1— Análisis de Objetivo*
+      await m.reply(`🎄 *Tech bot v1 — Análisis completo*
 
-『🎭』 Título: ${title}
-✦ Canal: ${authorName}
-✦ Duración: ${durationTimestamp}
-✦ Vistas: ${views}
+✨ *Título:* ${title}
+🔔 *Canal:* ${authorName}
+🎬 *Duración:* ${durationTimestamp}
+👁️ *Vistas:* ${views}
 
 Comandos disponibles:
-• .ytmp3 ${url}
-• .ytmp4 ${url}`)
+• *.ytmp3 ${url}*
+• *.ytmp4 ${url}*`)
     }
 
   } catch (error) {
-    console.error("Error general:", error)
-    await m.reply(`☯️ *Tech bot v1— Falla en la ejecución*
+    await m.reply(`🎄 *Tech bot v1 — Error en la operación*
 
-Algo perturbó el flujo de las sombras...
-Error: ${error.message}`)
+❌ ${error.message}`)
     await m.react("⚠️")
   }
 }
@@ -68,59 +65,79 @@ const downloadMedia = async (conn, m, url, title, thumbnail, type) => {
   try {
     const cleanTitle = cleanName(title) + (type === "mp3" ? ".mp3" : ".mp4")
 
-    const msg = `☯️ *tech bot v1 — Descarga en curso*
+    const msg = `🎄 *Tech bot v1 — Descarga en curso*
 
-『🎭』 Título: ${title}
-Invocando tu ${type === "mp3" ? "audio espectral" : "video oculto"}...`
+✨ *Título:* ${title}
+🎁 Preparando tu ${type === "mp3" ? "audio navideño" : "video festivo"}...`
 
+    let sent
     if (thumbnail) {
-      await conn.sendMessage(m.chat, { image: { url: thumbnail }, caption: msg }, { quoted: m })
+      sent = await conn.sendMessage(
+        m.chat,
+        { image: { url: thumbnail }, caption: msg },
+        { quoted: m }
+      )
     } else {
-      await m.reply(msg)
+      sent = await conn.sendMessage(
+        m.chat,
+        { text: msg },
+        { quoted: m }
+      )
     }
 
-    const apiUrl = `https://mayapi.ooguy.com/ytdl?url=${encodeURIComponent(url)}&type=${type}&apikey=may-30ca3691`
+    const apiUrl = type === "mp3"
+      ? `https://api-adonix.ultraplus.click/download/ytaudio?url=${encodeURIComponent(url)}&apikey=AdonixKeyuxuacv6765`
+      : `https://api-adonix.ultraplus.click/download/ytvideo?url=${encodeURIComponent(url)}&apikey=AdonixKeyuxuacv6765`
+
     const response = await fetch(apiUrl)
     const data = await response.json()
 
-    if (!data || !data.status || !data.result || !data.result.url) {
-      throw new Error("No se pudo obtener el archivo hay un error en la api.")
+    if (!data?.status || !data?.data?.url) {
+      throw new Error("La API no devolvió un archivo válido.")
     }
+
+    const fileUrl = data.data.url
+    const fileTitle = data.data.title || title
 
     if (type === "mp3") {
-      await conn.sendMessage(m.chat, {
-        audio: { url: data.result.url },
-        mimetype: "audio/mpeg",
-        fileName: cleanTitle
-      }, { quoted: m })
+      await conn.sendMessage(
+        m.chat,
+        {
+          audio: { url: fileUrl },
+          mimetype: "audio/mpeg",
+          fileName: cleanTitle
+        },
+        { quoted: m }
+      )
     } else {
-      await conn.sendMessage(m.chat, {
-        video: { url: data.result.url },
-        mimetype: "video/mp4",
-        fileName: cleanTitle
-      }, { quoted: m })
+      await conn.sendMessage(
+        m.chat,
+        {
+          video: { url: fileUrl },
+          mimetype: "video/mp4",
+          fileName: cleanTitle
+        },
+        { quoted: m }
+      )
     }
 
-    const doneMsg = `☯️ *Tech bot v1— Transferencia completada*
+    await conn.sendMessage(
+      m.chat,
+      {
+        text: `🎄 *Tech bot v1 — Operación completada*
 
-『🎭』 Título: ${data.result.title || title}
-✦ Tipo: ${type === "mp3" ? "Audio" : "Video"}
-✦ Estado: Descargado con precisión letal.
+✨ *Título:* ${fileTitle}
+🎁 Entregado con magia navideña.`,
+        edit: sent.key
+      }
+    )
 
-Disfrútalo... como si fuera el último día en la tierra.`
-
-    await m.reply(doneMsg)
     await m.react("✅")
 
   } catch (error) {
-    console.error("Error descargando:", error)
-    const errorMsg = `☯️ *Tech bot v1 — Error en la operación*
+    await m.reply(`🎄 *Shadow — Falla en la entrega*
 
-『🎭』 Título: ${title}
-Algo falló en la ejecución...
-${error.message}`
-
-    await m.reply(errorMsg)
+❌ ${error.message}`)
     await m.react("❌")
   }
 }
