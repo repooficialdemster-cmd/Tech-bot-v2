@@ -26,7 +26,7 @@ cfonts.say('Tech-Bot V1', {
 })
 
 
-cfonts.say('Made by Ado', {
+cfonts.say('Made by Wilker', {
   font: 'console',     
   align: 'center',
   gradient: ['cyan', 'white'],
